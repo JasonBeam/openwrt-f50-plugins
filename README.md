@@ -33,6 +33,36 @@
 - 平台按 1024 MB/显示 GB 换算，本机原统计仍按原口径累计；运营商数据也可能延迟，不能保证实时账单精度。
 - 每月重置日由原流量池管理，插件不会从平台推断结算日，请自行核对。
 
+## 实机截图与现有设置
+
+以下截图来自维护者 F50 上已配置的 LuCI 流量池，拍摄于 **2026-10-16**，不是效果图。
+这是本项目整理前已有的设备内集成部署，**不等同于本仓库独立 LuCI 包已完成全新安装验收**；两者的页面入口和布局有所不同。
+截图不包含卡号、查询验证码、Cookie 或密钥。显示的流量与剩余量只是拍摄当时的状态，不代表实时余量。
+
+### 流量池与小鲸 IoT 校正
+
+本机网卡累计与最近一次平台校正分别展示，图中可见自动校正状态、周期额度和最近成功时间。
+
+![F50 实机流量池与小鲸 IoT 自动校正](docs/screenshots/f50-traffic-iot.jpg)
+
+### 套餐设置
+
+此设备示例使用 508 GB 周期额度、每月 26 日重置、上下行合计，网卡自动跟随蜂窝 WAN。
+这些只是本机套餐设置，其他用户应填写自己的额度和结算日，不要直接照抄。
+
+![F50 实机套餐与流量池设置](docs/screenshots/f50-traffic-settings.jpg)
+
+### RA 现有部署状态
+
+同日从设备只读查询得到以下输出。RA 现有部署没有网页设置页，因此这里展示真实脚本输出，而非模拟截图：
+
+```text
+WAN=sipa_eth0; RA remaining=62401s; interval=3600s; threshold=7200s
+```
+
+剩余寿命会随时间变化；该输出证明查询时存在 RA 默认路由，不代表进行了强制刷新测试。
+取图期间没有修改流量池、RA、网络或供电设置。
+
 ## 下载源码与修改
 
 [下载全部源码 ZIP](https://github.com/JasonBeam/openwrt-f50-plugins/archive/refs/heads/main.zip)，也可 Fork 后修改。
@@ -92,3 +122,14 @@ GitHub Actions 运行相同的源码检查；CI 绿灯**不代表**真实设备�
 
 欢迎 Fork 或提交 PR。先说明影响范围、兼容性和测试证据，再审查合并；请勿附带卡号或设备备份。
 [MIT License](LICENSE) 允许使用、修改和再分发。外部 `rdisc6`、OpenWrt 和 LuCI 依赖仍遵守各自许可。
+
+## 致谢
+
+感谢 [kano / Minikano](https://github.com/kanoqwq) 和 [kaan](https://github.com/dikeckaan)
+为 F50 / MU300 的 Linux、OpenWrt 适配、固件及安装工具所做的工作，让这些辅助功能有了可用的平台基础。
+
+- [kano 的 mu300-linux 项目](https://github.com/kanoqwq/mu300-linux)
+- [kaan 的 mu300-linux 项目](https://github.com/dikeckaan/mu300-linux)
+- [OpenWrt](https://openwrt.org/) 与 [LuCI](https://github.com/openwrt/luci) 社区
+
+本仓库是独立整理的辅助插件，不是上述项目的官方发行物；致谢不表示上游维护者已审查或认可本仓库代码。
