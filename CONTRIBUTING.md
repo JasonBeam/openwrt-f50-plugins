@@ -18,4 +18,4 @@ ruby tests/test_xiaojing.rb
 
 在干净工作树中更新 CHANGELOG、版本说明及对应 README 链接；发布者确认测试和验收边界后，在已合并的提交上创建 `vX.Y.Z` 标签并推送。Release 工作流会重新运行检查、仅从标签提交打包、生成 SHA-256 并上传附件。0.x 标签自动标为预发布；正式稳定版需先完成验收计划。
 
-本地检查打包方式：`python3 tools/build_release.py v0.1.0`。默认输出到 `dist/`，只包含 HEAD 中已提交文件。调整版本时同步更新 `docs/releases/vX.Y.Z.md` 与四个 Makefile 的 PKG_VERSION。自动生成的附件不应手工改写。
+本地检查打包方式：`python3 tools/build_release.py v0.1.1`。默认输出到 `dist/`，只包含 HEAD 中已提交文件。调整版本时同步更新 `docs/releases/vX.Y.Z.md` 与受影响包 Makefile 的 PKG_VERSION。自动生成的附件不应手工改写。
