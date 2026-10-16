@@ -1,0 +1,44 @@
+name: Release downloads
+on:
+  push:
+    tags:
+      - 'v*'
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - run: ruby tests/test_xiaojing.rb
+      - name: Build assets from the tag commit
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 tools/build_release.py "$RELEASE_TAG"
+      - name: Verify checksums
+        working-directory: dist
+        run: sha256sum -c SHA256SUMS.txt
+      - name: Publish versioned downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          notes="docs/releases/$RELEASE_TAG.md"
+          test -f "$notes"
+          flags=()
+          if [[ "$RELEASE_TAG" == v0.* || "$RELEASE_TAG" == *-* ]]; then
+            flags+=(--prerelease --latest=false)
+          fi
+          gh release create "$RELEASE_TAG" dist/* --verify-tag \
+            --title "$RELEASE_TAG" --notes-file "$notes" "${flags[@]}"

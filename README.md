@@ -4,6 +4,21 @@
 
 > **0.1.0 实验性源码版**：已做代码审查和隔离测试，但尚未完成 SDK 打包、全新设备安装/卸载、开机以及新 LuCI 页面的实机验收。不是可直接添加到路由器的软件包下载源；暂不提供未经验证的 APK/IPK。不要在唯一的上网设备上直接试装。
 
+## Release 下载
+
+当前首版为 **v0.1.0 实验性预发布**：[下载附件与版本说明](https://github.com/JasonBeam/openwrt-f50-plugins/releases/tag/v0.1.0)。
+
+| 文件 | 内容 |
+| --- | --- |
+| `openwrt-f50-plugins-v0.1.0-source.zip` | 四个包的完整源码、测试和文档 |
+| `f50-ra-refresh-v0.1.0-source.zip` | RA 后台 + 对应 LuCI 源码及安装说明 |
+| `f50-xiaojing-v0.1.0-source.zip` | 小鲸后台 + 对应 LuCI 源码及安装说明 |
+
+附件附带 `SHA256SUMS.txt`。按功能拆分的 ZIP 同样是源码，需在匹配固件的 SDK 中构建；不能直接通过 opkg/apk 安装。
+
+[更新记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md) · [稳定版验收计划](docs/ROADMAP.md) · [反馈问题](https://github.com/JasonBeam/openwrt-f50-plugins/issues/new/choose)
+
+
 ## 按需选择
 
 | 需要什么 | 纯后台包 | 可选 LuCI 界面 |
