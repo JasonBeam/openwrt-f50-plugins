@@ -1,0 +1,37 @@
+#!/usr/bin/ruby
+require '/usr/libexec/f50-xiaojing-lib'
+begin
+  client = F50::Xiaojing.new
+  if ARGV == ['list']
+    puts JSON.generate({status: {}, configure: {payload: ''}, sync: {slot: 0}})
+  elsif ARGV[0] == 'call'
+    input = JSON.parse(STDIN.read(4097))
+    result = case ARGV[1]
+    when 'status'
+      client.status
+    when 'configure'
+      client.configure(JSON.parse(input.fetch('payload')))
+    when 'sync'
+      status = client.status
+      if ![0, 1].include?(input['slot']) || input['slot'] != status[:slot]
+        {ok: false, error: 'invalid_slot'}
+      elsif !status[:configured] || !status[:enabled]
+        {ok: false, error: 'disabled'}
+      elsif status[:running]
+        {ok: false, error: 'busy'}
+      else
+        pid = Process.spawn('/usr/bin/ruby', '/usr/libexec/f50-xiaojing', '--sync',
+          in: File::NULL, out: File::NULL, err: File::NULL, pgroup: true)
+        Process.detach(pid)
+        {ok: true, started: true}
+      end
+    else
+      {ok: false, error: 'invalid_request'}
+    end
+    puts JSON.generate(result)
+  else
+    puts JSON.generate({ok: false, error: 'invalid_request'})
+  end
+rescue StandardError
+  puts JSON.generate({ok: false, error: 'service_unavailable'})
+end

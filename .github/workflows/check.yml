@@ -1,0 +1,15 @@
+name: Source checks
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: Syntax, defaults, ACL and publication-scope checks
+        run: python3 -m unittest discover -s tests -p 'test_*.py' -v
+      - name: Isolated operator and traffic-pool tests
+        run: ruby tests/test_xiaojing.rb

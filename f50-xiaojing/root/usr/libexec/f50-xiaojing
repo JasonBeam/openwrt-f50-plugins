@@ -1,0 +1,26 @@
+#!/usr/bin/ruby
+require '/usr/libexec/f50-xiaojing-lib'
+client = F50::Xiaojing.new
+case ARGV.first
+when '--watch'
+  loop do
+    started = Time.now.to_i
+    cfg = client.config
+    client.sync if cfg['enabled'] == true
+    # Reload configuration at least once per minute, without restarting networking.
+    loop do
+      sleep 30
+      current = client.config
+      break if current != cfg || Time.now.to_i - started >= (current['interval'].is_a?(Integer) ? [300, current['interval']].max : 1200)
+    end
+  end
+when '--sync', '--preview'
+  result = client.sync(preview: ARGV.first == '--preview')
+  puts JSON.generate(result)
+  exit(result[:ok] ? 0 : 1)
+when '--status'
+  puts JSON.generate(client.status)
+else
+  warn 'Usage: f50-xiaojing --status|--sync|--preview|--watch'
+  exit 2
+end

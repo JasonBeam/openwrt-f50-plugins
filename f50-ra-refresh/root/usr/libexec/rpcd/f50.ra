@@ -1,0 +1,10 @@
+#!/bin/sh
+case "$1:$2" in
+	list:) printf '%s\n' '{"status":{},"request":{}}' ;;
+	call:status) exec /usr/sbin/f50-ra-refresh --status ;;
+	call:request)
+		# Fixed executable; no user-supplied command, path, interface or flags.
+		/usr/sbin/f50-ra-refresh --once </dev/null >/dev/null 2>&1 &
+		printf '%s\n' '{"ok":true,"started":true}' ;;
+	*) printf '%s\n' '{"ok":false,"error":"invalid_request"}' ;;
+esac

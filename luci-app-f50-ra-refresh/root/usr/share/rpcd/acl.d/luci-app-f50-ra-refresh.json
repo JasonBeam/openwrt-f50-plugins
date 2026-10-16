@@ -1,0 +1,7 @@
+{
+  "luci-app-f50-ra-refresh": {
+    "description": "RA 状态与保守刷新，不提供通用命令执行",
+    "read": {"ubus":{"f50.ra":["status"]},"uci":["f50_ra"]},
+    "write": {"ubus":{"f50.ra":["request"]},"uci":["f50_ra"]}
+  }
+}

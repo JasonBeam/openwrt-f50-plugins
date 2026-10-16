@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+dist/
+*.apk
+*.ipk
+config.json
+credentials.json
+status.json
+*.log
+*.bin
+*.img
+*.key
+*.pem
+.env*

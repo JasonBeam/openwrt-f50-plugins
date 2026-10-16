@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "slot": 0,
+  "interval": 1200,
+  "allow_http": false,
+  "card": "",
+  "verify": ""
+}

@@ -1,0 +1,8 @@
+{
+  "admin/services/f50-ra-refresh": {
+    "title": "IPv6 RA 刷新",
+    "order": 81,
+    "action": { "type": "view", "path": "f50/ra" },
+    "depends": { "acl": ["luci-app-f50-ra-refresh"] }
+  }
+}

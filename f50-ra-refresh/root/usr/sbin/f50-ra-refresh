@@ -1,0 +1,73 @@
+#!/bin/sh
+# SPDX-License-Identifier: MIT
+# Solicit an authentic RA. Never fabricate/delete routes or restart networking.
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+export PATH
+
+load_settings() {
+	enabled=$(uci -q get f50_ra.main.enabled)
+	network=$(uci -q get f50_ra.main.network); network=${network:-wan}
+	prefix=$(uci -q get f50_ra.main.device_prefix); prefix=${prefix:-sipa_eth}
+	interval=$(uci -q get f50_ra.main.interval); interval=${interval:-3600}
+	threshold=$(uci -q get f50_ra.main.threshold); threshold=${threshold:-7200}
+	case "$network" in ''|*[!a-zA-Z0-9_]*|?????????????????????????????????*) return 1 ;; esac
+	case "$prefix" in ''|*[!a-zA-Z0-9_.:-]*|????????????????*) return 1 ;; esac
+	case "$interval:$threshold" in *[!0-9:]*|:*|*:) return 1 ;; esac
+	case "$interval:$threshold" in 0*|*:0*) return 1 ;; esac
+	[ ${#interval} -le 6 ] && [ ${#threshold} -le 6 ] || return 1
+	[ "$interval" -ge 60 ] && [ "$interval" -le 86400 ] || return 1
+	[ "$threshold" -ge 60 ] && [ "$threshold" -le 604800 ] || return 1
+	tool=''
+	for candidate in /usr/bin/rdisc6 /usr/sbin/rdisc6 /usr/libexec/f50-rdisc6; do
+		[ -x "$candidate" ] && { tool=$candidate; break; }
+	done
+	return 0
+}
+
+snapshot() {
+	status=$(ubus -t 5 call "network.interface.$network" status 2>/dev/null) || return 1
+	[ "$(printf '%s' "$status" | jsonfilter -e '@.up')" = true ] || return 1
+	dev=$(printf '%s' "$status" | jsonfilter -e '@.l3_device')
+	case "$dev" in ''|*[!a-zA-Z0-9_.:-]*|????????????????*) return 1 ;; esac
+	case "$dev" in "$prefix"*) ;; *) return 1 ;; esac
+	ip link show dev "$dev" >/dev/null 2>&1 || return 1
+	route=$(ip -6 route show default dev "$dev" proto ra 2>/dev/null | head -n 1)
+	remaining=$(printf '%s\n' "$route" | awk '{for(i=1;i<=NF;i++) if($i=="expires") {v=$(i+1); sub(/sec$/, "", v); if(v ~ /^[0-9]+$/) print v; exit}}')
+}
+
+report() {
+	load_settings || { printf '{"ok":false,"error":"invalid_config"}\n'; return 1; }
+	ready=false; snapshot && ready=true
+	[ "$enabled" = 1 ] && enabled_json=true || enabled_json=false
+	[ -n "$tool" ] && tool_json=true || tool_json=false
+	# dev is allowlisted above; no operator-provided text is interpolated.
+	[ "$ready" = true ] || dev=''
+	case "$remaining" in ''|*[!0-9]*) lifetime=null ;; *) lifetime=$remaining ;; esac
+	printf '{"ok":true,"enabled":%s,"wan_ready":%s,"device":"%s","remaining":%s,"interval":%s,"threshold":%s,"tool_available":%s}\n' \
+		"$enabled_json" "$ready" "$dev" "$lifetime" "$interval" "$threshold" "$tool_json"
+}
+
+once() (
+	load_settings || exit 2
+	[ "$enabled" = 1 ] || { echo 'RA refresh disabled'; exit 0; }
+	[ -n "$tool" ] || { logger -t f50-ra-refresh 'Trusted rdisc6 is missing; no changes made'; exit 1; }
+	exec 9>/var/run/f50-ra-refresh.lock
+	flock -n 9 || exit 0
+	snapshot || { echo 'Configured WAN not ready; no action'; exit 0; }
+	if [ "${1:-}" != --force ] && [ -n "$route" ]; then
+		case "$remaining" in ''|*[!0-9]*) echo 'RA lifetime unknown; left unchanged'; exit 0 ;; esac
+		[ "$remaining" -gt "$threshold" ] && { echo "Healthy RA: ${remaining}s"; exit 0; }
+	fi
+	logger -t f50-ra-refresh "Soliciting RA on $dev; previous lifetime=${remaining:-missing}"
+	"$tool" -1 -n -r 2 -w 3000 "$dev"
+	rc=$?
+	logger -t f50-ra-refresh "Router solicitation exit=$rc; routes not manually changed"
+	exit "$rc"
+)
+
+case "${1:-}" in
+	--status) report ;;
+	--watch) while :; do once; load_settings || interval=3600; sleep "$interval"; done ;;
+	''|--once|--force) once "${1:-}" ;;
+	*) echo 'Usage: f50-ra-refresh [--status|--once|--force|--watch]' >&2; exit 2 ;;
+esac

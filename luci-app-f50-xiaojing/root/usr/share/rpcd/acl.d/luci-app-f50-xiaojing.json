@@ -1,0 +1,7 @@
+{
+  "luci-app-f50-xiaojing": {
+    "description": "查看小鲸校正状态；凭据仅写入、不读回",
+    "read": { "ubus": { "f50.xiaojing": ["status"] } },
+    "write": { "ubus": { "f50.xiaojing": ["configure", "sync"] } }
+  }
+}
