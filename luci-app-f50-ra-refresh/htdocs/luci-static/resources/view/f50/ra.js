@@ -17,8 +17,10 @@ return view.extend({
   var o=section.option(form.Flag,'enabled','启用');o.default='0';o.rmempty=false;
   o=section.option(form.Value,'network','逻辑 WAN 接口');o.default='wan';o.datatype='uciname';o.rmempty=false;
   o=section.option(form.Value,'device_prefix','允许的网卡前缀');o.default='sipa_eth';o.rmempty=false;
-  o=section.option(form.Value,'interval','检查间隔（秒）');o.datatype='range(60,86400)';o.default='3600';o.rmempty=false;
-  o=section.option(form.Value,'threshold','RA 寿命阈值（秒）');o.datatype='range(60,604800)';o.default='7200';o.rmempty=false;
+  o=section.option(form.Flag,'adaptive','自适应观察',
+   '按已观察寿命的四分之一提前请求，至少 30 秒、最多 7200 秒，并受下方阈值上限限制。通常每 60 秒观察，剩余不足 240 秒时每 10 秒观察。');o.default='1';o.rmempty=false;
+  o=section.option(form.Value,'interval','固定模式检查间隔（秒）');o.datatype='range(60,86400)';o.default='3600';o.rmempty=false;
+  o=section.option(form.Value,'threshold','固定阈值 / 自适应阈值上限（秒）');o.datatype='range(60,604800)';o.default='7200';o.rmempty=false;
   this.statusNode=E('p',{'role':'status','aria-live':'polite'});
   this.paint(data);
   return m.render().then(function(map){
@@ -40,6 +42,13 @@ return view.extend({
   var text=!d.ok?'配置或状态读取失败':!d.tool_available?'缺少 rdisc6：不会执行刷新':!d.enabled?'自动刷新已关闭':
    !d.wan_ready?'指定 WAN 尚未就绪':d.device+' · RA 剩余 '+(d.remaining==null?'未知':d.remaining+' 秒')+
     ' · 检查间隔 '+d.interval+' 秒 · 阈值 '+d.threshold+' 秒';
+  if(d.ok&&d.wan_ready){
+   var events={baseline:'开始观察',natural:'观察到非本脚本请求的续期',solicited:'主动请求后已核验续期',failed:'未核验到续期'};
+   text+=' · '+(d.adaptive?'自适应':'固定模式')+' · 寿命 '+(d.lifetime==null?'未知':
+    d.lifetime+' 秒（'+(d.lifetime_source==='advertised'?'网关通告':'观察下界')+'）')+
+    ' · 自然续期间隔 '+(d.natural_interval==null?'尚未测得':d.natural_interval+' 秒（采样估计）')+
+    ' · '+(events[d.last_event]||'尚无记录');
+  }
   this.statusNode.textContent=text;
   if(this.button)this.button.disabled=!!this.busy||!d.ok||!d.enabled||!d.tool_available||!d.wan_ready;
  },
