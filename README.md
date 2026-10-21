@@ -18,6 +18,13 @@
 
 [更新记录](CHANGELOG.md) · [贡献指南](CONTRIBUTING.md) · [稳定版验收计划](docs/ROADMAP.md) · [反馈问题](https://github.com/JasonBeam/openwrt-f50-plugins/issues/new/choose)
 
+### 2026-10-22 源码更新（main 分支，尚未打新 Release）
+
+已有 MU300 流量池集成版新增**自定义小鲸 IoT 刷新间隔**：5–1440 整数分钟，默认20分钟；保存只改查询间隔，保留卡号、SIM绑定、额度及流量历史。自动任务每5秒读取新间隔，无需重启网络。
+详见[流量池集成兼容补丁](integrations/mu300/README.md)。它与本库独立 LuCI 页面的秒数设置不同，不能混装或直接覆盖不同固件。
+
+本次只更新小鲸集成代码与文档；Android/UFI RA 刷新仍待实机检查，没有宣称支持。以上源码不在旧 v0.1.1 下载附件中。
+
 
 ## 按需选择
 

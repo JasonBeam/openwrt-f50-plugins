@@ -12,4 +12,6 @@ jobs:
       - name: Syntax, defaults, ACL and publication-scope checks
         run: python3 -m unittest discover -s tests -p 'test_*.py' -v
       - name: Isolated operator and traffic-pool tests
-        run: ruby tests/test_xiaojing.rb
+        run: |
+          ruby tests/test_xiaojing.rb
+          ruby tests/test_iot_interval.rb
