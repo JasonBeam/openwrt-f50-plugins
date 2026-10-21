@@ -14,8 +14,6 @@
 | --- | --- | --- |
 | 按固定版本研究或构建独立 RA / 小鲸插件 | [v0.1.1 Release](https://github.com/JasonBeam/openwrt-f50-plugins/releases/tag/v0.1.1) | 最新已发布预发布版本；有版本说明和 SHA-256 校验 |
 | 今天新增的 MU300 集成版刷新间隔补丁 | [`main` 最新源码](https://github.com/JasonBeam/openwrt-f50-plugins/archive/refs/heads/main.zip) + [集成说明](integrations/mu300/README.md) | 2026-10-22 新增，**不在 v0.1.1 附件中**；仅用于匹配的已有集成部署 |
-| 一个能直接上传安装的 IPK / APK | 目前没有经过构建与安装验收的下载包 | 不要把源码 ZIP 当作安装包 |
-| Android / UFI 系统上的 RA 刷新 | 当前未提供已验收实现 | OpenWrt 插件不能直接当作 Android 工具安装 |
 
 **Release 用来固定版本，`main` 用来跟进开发。** 首页与教程会继续更新，旧 Release 附件不会随 `main` 自动变化。需要复现、分享或长期留档时优先使用固定版本；需要尚未发布的新功能时，选择对应源码提交并先核对兼容条件。
 
