@@ -12,6 +12,7 @@
 ```sh
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 ruby tests/test_xiaojing.rb
+ruby tests/test_iot_interval.rb
 ```
 
 ## 版本发布
@@ -19,3 +20,5 @@ ruby tests/test_xiaojing.rb
 在干净工作树中更新 CHANGELOG、版本说明及对应 README 链接；发布者确认测试和验收边界后，在已合并的提交上创建 `vX.Y.Z` 标签并推送。Release 工作流会重新运行检查、仅从标签提交打包、生成 SHA-256 并上传附件。0.x 标签自动标为预发布；正式稳定版需先完成验收计划。
 
 本地检查打包方式：`python3 tools/build_release.py v0.1.1`。默认输出到 `dist/`，只包含 HEAD 中已提交文件。调整版本时同步更新 `docs/releases/vX.Y.Z.md` 与受影响包 Makefile 的 PKG_VERSION。自动生成的附件不应手工改写。
+
+完整源码 ZIP 与按功能拆分的 ZIP 范围不同：现有拆分包不含 MU300 集成目录和间隔补丁工具。新发布若要提供该补丁的单独附件，应先调整打包范围并验证内容。详见[版本选择](docs/VERSIONS.md)和[安装包规划](docs/PACKAGING.md)。文档排版更新可以直接进入 main，不必为了每次文字调整创建 Release。
